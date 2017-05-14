@@ -9,6 +9,7 @@
  *                        Header include
 *****************************************************************/
 #include "Delay.h"
+#include "stdbool.h"
 
 /****************************************************************
  *                       Global variables
@@ -33,14 +34,14 @@ static void Delay_Init(void);
 *****************************************************************/
 static void Delay_Init(void)
 {
-  static uint8_t first = 0;
+  static bool init_flag = false;
   
-  if(first == 0)
+  if(init_flag == false)
   {
-    first = 1;
+    init_flag = true;
     
-    SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8);
-    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;  /* Disability SysTick counter */
+    SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8); /* Configures the SysTick clock source. */
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;            /* Disability SysTick counter */
   }
 }
 
