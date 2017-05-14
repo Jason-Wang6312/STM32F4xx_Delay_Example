@@ -7,3 +7,9 @@
 * 适用芯片：STM32F4全部芯片
 * 固件库：STM32F4xx_DSP_StdPeriph_Lib_V1.8.0
 * IDE：MDK517
+
+## API
+
+* void Delay_us(uint64_t nus)
+* void Delay_ms(uint64_t nms)
+* void Delay_s(uint64_t ns)
