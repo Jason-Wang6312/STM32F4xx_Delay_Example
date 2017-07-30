@@ -2,7 +2,7 @@
  * Copyright (C) 2016, XinLi, all right reserved.
  * File name:    Delay.h
  * Date:         2016.03.22
- * Description:  Delay Driver
+ * Description:  Delay driver.
 *****************************************************************/
 
 #ifndef __DELAY_H

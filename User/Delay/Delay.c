@@ -2,7 +2,7 @@
  * Copyright (C) 2016, XinLi, all right reserved.
  * File name:    Delay.c
  * Date:         2016.03.22
- * Description:  Delay Driver
+ * Description:  Delay driver.
 *****************************************************************/
 
 /****************************************************************
@@ -27,7 +27,7 @@ static void Delay_Init(void);
 
 /****************************************************************
  * Function:    Delay_Init
- * Description: Delay Configuration.
+ * Description: Delay initialization.
  * Input:
  * Output:
  * Return:
