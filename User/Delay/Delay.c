@@ -71,7 +71,6 @@ void Delay_us(uint64_t nus)
     while((SysTick->CTRL&(1UL<<16)) != (1UL<<16));                  /* Wait time is reached. */
     
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;                      /* Close counter. */
-    SysTick->VAL = 0;                                               /* Empty counter. */
   }
 }
 
@@ -112,7 +111,6 @@ void Delay_ms(uint64_t nms)
     while((SysTick->CTRL&(1UL<<16)) != (1UL<<16));                /* Wait time is reached. */
     
     SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;                    /* Close counter. */
-    SysTick->VAL = 0;                                             /* Empty counter. */
     
     nms -= 500;
   }
@@ -138,7 +136,6 @@ void Delay_ms(uint64_t nms)
   while((SysTick->CTRL&(1UL<<16)) != (1UL<<16));                  /* Wait time is reached. */
   
   SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;                      /* Close counter. */
-  SysTick->VAL = 0;                                               /* Empty counter. */
 }
 
 /****************************************************************
