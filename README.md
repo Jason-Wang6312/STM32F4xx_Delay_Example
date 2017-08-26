@@ -13,3 +13,7 @@
 * void Delay_us(uint64_t nus)
 * void Delay_ms(uint64_t nms)
 * void Delay_s(uint64_t ns)
+
+## 注意
+
+为了保证程序的正常运行，HCLK时钟必须在1~250MHz之内。
