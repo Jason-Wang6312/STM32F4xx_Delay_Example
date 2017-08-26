@@ -9,7 +9,6 @@
  *                        Header include
 *****************************************************************/
 #include "Delay.h"
-#include <stdbool.h>
 
 /****************************************************************
  *                       Global variables
@@ -19,31 +18,11 @@
 /****************************************************************
  *                     Function declaration
 *****************************************************************/
-static void Delay_Init(void);
+
 
 /****************************************************************
  *                     Function definition
 *****************************************************************/
-
-/****************************************************************
- * Function:    Delay_Init
- * Description: Delay initialization.
- * Input:
- * Output:
- * Return:
-*****************************************************************/
-static void Delay_Init(void)
-{
-  static bool init_flag = false;
-  
-  if(init_flag == false)
-  {
-    init_flag = true;
-    
-    SysTick_CLKSourceConfig(SysTick_CLKSource_HCLK_Div8); /* Configures the SysTick clock source. */
-    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;            /* Disability SysTick counter */
-  }
-}
 
 /****************************************************************
  * Function:    Delay_us
@@ -54,10 +33,7 @@ static void Delay_Init(void)
 *****************************************************************/
 void Delay_us(uint64_t nus)
 {
-  uint32_t temp = 0;
   uint64_t nms = 0;
-  
-  Delay_Init();
   
   if(nus == 0)
   {
@@ -71,21 +47,31 @@ void Delay_us(uint64_t nus)
   {
     Delay_ms(nms);
   }
-
+  
   if(nus > 0)
   {
-    SysTick->LOAD = SystemCoreClock / 8000000 * nus;  /* Time load (SysTick-> LOAD is 24bit) */
-    SysTick->VAL = 0x000000;                          /* Empty counter */
-    SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;         /* Start the countdown */
-
-    do
+    RCC_ClocksTypeDef RCC_ClockFreq;
+    
+    RCC_GetClocksFreq(&RCC_ClockFreq);                              /* Get the frequencies of different on chip clocks. */
+    
+    if(RCC_ClockFreq.HCLK_Frequency < 8000000)
     {
-      temp = SysTick->CTRL;
+      SysTick->CTRL |= SysTick_CLKSource_HCLK;                      /* Configures the SysTick clock source. */
+      SysTick->LOAD = RCC_ClockFreq.HCLK_Frequency / 1000000 * nus; /* Time load (SysTick-> LOAD is 24bit). */
     }
-    while(temp&0x01 && !(temp&(1<<16)));        /* Wait time is reached */
-
-    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;  /* Close Counter */
-    SysTick->VAL = 0x000000;                    /* Empty counter */
+    else
+    {
+      SysTick->CTRL &= SysTick_CLKSource_HCLK_Div8;                 /* Configures the SysTick clock source. */
+      SysTick->LOAD = RCC_ClockFreq.HCLK_Frequency / 8000000 * nus; /* Time load (SysTick-> LOAD is 24bit). */
+    }
+    
+    SysTick->VAL = 0;                                               /* Empty counter. */
+    SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;                       /* Start the countdown. */
+    
+    while((SysTick->CTRL&(1UL<<16)) != (1UL<<16));                  /* Wait time is reached. */
+    
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;                      /* Close counter. */
+    SysTick->VAL = 0;                                               /* Empty counter. */
   }
 }
 
@@ -98,10 +84,6 @@ void Delay_us(uint64_t nus)
 *****************************************************************/
 void Delay_ms(uint64_t nms)
 {
-  uint32_t temp = 0;
-  
-  Delay_Init();
-  
   if(nms == 0)
   {
     return;
@@ -109,34 +91,54 @@ void Delay_ms(uint64_t nms)
   
   while(nms > 500)
   {
-    SysTick->LOAD = SystemCoreClock / 8000 * 500; /* Time load (SysTick-> LOAD is 24bit) */
-    SysTick->VAL = 0x000000;                      /* Empty counter */
-    SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;     /* Start the countdown */
-
-    do
+    RCC_ClocksTypeDef RCC_ClockFreq;
+    
+    RCC_GetClocksFreq(&RCC_ClockFreq);                            /* Get the frequencies of different on chip clocks. */
+    
+    if(RCC_ClockFreq.HCLK_Frequency < 8000000)
     {
-      temp = SysTick->CTRL;
+      SysTick->CTRL |= SysTick_CLKSource_HCLK;                    /* Configures the SysTick clock source. */
+      SysTick->LOAD = RCC_ClockFreq.HCLK_Frequency / 1000 * 500;  /* Time load (SysTick-> LOAD is 24bit). */
     }
-    while(temp&0x01 && !(temp&(1<<16)));        /* Wait time is reached */
-
-    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;  /* Close Counter */
-    SysTick->VAL = 0x000000;                    /* Empty counter */
+    else
+    {
+      SysTick->CTRL &= SysTick_CLKSource_HCLK_Div8;               /* Configures the SysTick clock source. */
+      SysTick->LOAD = RCC_ClockFreq.HCLK_Frequency / 8000 * 500;  /* Time load (SysTick-> LOAD is 24bit). */
+    }
+    
+    SysTick->VAL = 0;                                             /* Empty counter. */
+    SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;                     /* Start the countdown. */
+    
+    while((SysTick->CTRL&(1UL<<16)) != (1UL<<16));                /* Wait time is reached. */
+    
+    SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;                    /* Close counter. */
+    SysTick->VAL = 0;                                             /* Empty counter. */
     
     nms -= 500;
   }
   
-  SysTick->LOAD = SystemCoreClock / 8000 * nms; /* Time load (SysTick-> LOAD is 24bit) */
-  SysTick->VAL = 0x000000;                      /* Empty counter */
-  SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;     /* Start the countdown */
-
-  do
+  RCC_ClocksTypeDef RCC_ClockFreq;
+  
+  RCC_GetClocksFreq(&RCC_ClockFreq);                              /* Get the frequencies of different on chip clocks. */
+  
+  if(RCC_ClockFreq.HCLK_Frequency < 8000000)
   {
-    temp = SysTick->CTRL;
+    SysTick->CTRL |= SysTick_CLKSource_HCLK;                      /* Configures the SysTick clock source. */
+    SysTick->LOAD = RCC_ClockFreq.HCLK_Frequency / 1000 * nms;    /* Time load (SysTick-> LOAD is 24bit). */
   }
-  while(temp&0x01 && !(temp&(1<<16)));        /* Wait time is reached */
-
-  SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;  /* Close Counter */
-  SysTick->VAL = 0x000000;                    /* Empty counter */
+  else
+  {
+    SysTick->CTRL &= SysTick_CLKSource_HCLK_Div8;                 /* Configures the SysTick clock source. */
+    SysTick->LOAD = RCC_ClockFreq.HCLK_Frequency / 8000 * nms;    /* Time load (SysTick-> LOAD is 24bit). */
+  }
+  
+  SysTick->VAL = 0;                                               /* Empty counter. */
+  SysTick->CTRL |= SysTick_CTRL_ENABLE_Msk;                       /* Start the countdown. */
+  
+  while((SysTick->CTRL&(1UL<<16)) != (1UL<<16));                  /* Wait time is reached. */
+  
+  SysTick->CTRL &= ~SysTick_CTRL_ENABLE_Msk;                      /* Close counter. */
+  SysTick->VAL = 0;                                               /* Empty counter. */
 }
 
 /****************************************************************
